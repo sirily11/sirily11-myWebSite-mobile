@@ -41,23 +41,25 @@ class CategorySelector extends StatelessWidget {
                 itemCount: postProvider.categories.length + 1,
                 itemBuilder: (context, index) {
                   if (index == 0) {
-                    return RadioListTile<PostCategory>(
+                    return RadioListTile(
                       onChanged: (v) {
-                        postProvider.selectedCategory = v;
+                        postProvider.selectedCategory = null;
                       },
                       value: null,
-                      groupValue: postProvider.selectedCategory,
+                      groupValue: postProvider.selectedCategory?.id,
                       title: Text("All"),
                     );
                   }
 
                   var category = postProvider.categories[index - 1];
-                  return RadioListTile<PostCategory>(
+                  return RadioListTile<int>(
                     onChanged: (v) {
-                      postProvider.selectedCategory = v;
+                      var category = postProvider.categories
+                          .firstWhere((element) => element.id == v);
+                      postProvider.selectedCategory = category;
                     },
-                    value: category,
-                    groupValue: postProvider.selectedCategory,
+                    value: category.id,
+                    groupValue: postProvider.selectedCategory?.id,
                     title: Text("${category.category}"),
                   );
                 }),

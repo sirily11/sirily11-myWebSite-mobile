@@ -17,6 +17,15 @@ class _HomePageState extends State<HomePage> {
   final ScrollController scrollController = ScrollController();
 
   @override
+  void initState() {
+    super.initState();
+    Future.delayed(Duration(milliseconds: 50)).then((value) async {
+      PostProvider postProvider = Provider.of(context, listen: false);
+      await _refresh(postProvider);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     PostProvider postProvider = Provider.of(context);
     var brightness = Theme.of(context).brightness;
@@ -47,25 +56,33 @@ class _HomePageState extends State<HomePage> {
                 await _refresh(postProvider);
               },
             ),
-            largeTitle: Text(
-              "${postProvider.selectedCategory == null ? "All" : "${postProvider.selectedCategory.category}"}",
-              style: darkModeOn
-                  ? TextStyle(color: Colors.white)
-                  : TextStyle(
-                      color: Colors.black,
-                    ),
+            largeTitle: GestureDetector(
+              onTap: () {
+                scrollController.animateTo(0,
+                    duration: Duration(milliseconds: 100),
+                    curve: Curves.easeInOut);
+              },
+              child: Text(
+                "${postProvider.selectedCategory == null ? "All" : "${postProvider.selectedCategory.category}"}",
+                style: darkModeOn
+                    ? TextStyle(color: Colors.white)
+                    : TextStyle(
+                        color: Colors.black,
+                      ),
+              ),
             ),
           ),
         ];
       },
       body: Scrollbar(
         child: EasyRefresh(
+          topBouncing: false,
           // scrollController: scrollController,
-          header: MaterialHeader(),
-          firstRefresh: true,
-          onRefresh: () async {
-            await _refresh(postProvider);
-          },
+          header: BallPulseHeader(),
+          footer: BallPulseFooter(),
+          // onRefresh: () async {
+          //   await _refresh(postProvider);
+          // },
           onLoad: postProvider.nextURL != null
               ? () async {
                   await _loadMore(postProvider);
@@ -73,9 +90,15 @@ class _HomePageState extends State<HomePage> {
               : null,
           child: ListView.builder(
             // controller: scrollController,
-            itemCount: postProvider.posts.length,
+            itemCount: postProvider.posts.length + 1,
             itemBuilder: (context, index) {
-              var post = postProvider.posts[index];
+              if (index == 0) {
+                return Container(
+                  height: 30,
+                );
+              }
+
+              var post = postProvider.posts[index - 1];
               return Container(height: 500, child: PostCard(post: post));
             },
           ),

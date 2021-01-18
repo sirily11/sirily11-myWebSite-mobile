@@ -105,93 +105,92 @@ class _PostCardState extends State<PostCard> {
           setState(() {
             tapped = false;
           });
+        },
+        onTapCancel: () {
           setState(() {
             tapped = false;
           });
         },
-        child: Hero(
-          tag: "${widget.post.id}",
-          child: Card(
-            clipBehavior: Clip.antiAliasWithSaveLayer,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(15.0),
-            ),
-            child: Stack(
-              children: [
-                if (widget.post.imageUrl != null)
-                  CachedNetworkImage(
-                    imageUrl: widget.post.imageUrl,
-                    fit: BoxFit.cover,
-                    height: 400,
-                    width: MediaQuery.of(context).size.width * 1.2,
-                    placeholder: (c, _) => Center(
-                      child: CircularProgressIndicator(),
-                    ),
+        child: Card(
+          clipBehavior: Clip.antiAliasWithSaveLayer,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15.0),
+          ),
+          child: Stack(
+            children: [
+              if (widget.post.imageUrl != null)
+                CachedNetworkImage(
+                  imageUrl: widget.post.imageUrl,
+                  fit: BoxFit.cover,
+                  height: 400,
+                  width: MediaQuery.of(context).size.width * 1.2,
+                  placeholder: (c, _) => Center(
+                    child: CircularProgressIndicator(),
                   ),
-                if (widget.post.imageUrl == null)
-                  Container(
-                    height: 400,
-                    color: Colors.pink,
+                ),
+              if (widget.post.imageUrl == null)
+                Container(
+                  height: 400,
+                  color: Colors.pink,
+                ),
+              Positioned(
+                top: 30,
+                width: MediaQuery.of(context).size.width * 0.5,
+                left: 10,
+                child: RichText(
+                  text: TextSpan(
+                    text: "${widget.post.title}\n",
+                    style: textStyle,
+                    children: [
+                      TextSpan(
+                        text: "${widget.post.postCategory.category}",
+                        style: textStyle.copyWith(fontSize: 15),
+                      )
+                    ],
                   ),
-                Positioned(
-                  top: 30,
-                  width: MediaQuery.of(context).size.width * 0.5,
-                  left: 10,
-                  child: RichText(
-                    text: TextSpan(
-                      text: "${widget.post.title}\n",
-                      style: textStyle,
+                ),
+              ),
+              Positioned(
+                bottom: 0,
+                height: 60,
+                width: MediaQuery.of(context).size.width,
+                child: Container(
+                  color: coverColor,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
                       children: [
-                        TextSpan(
-                          text: "${widget.post.postCategory.category}",
-                          style: textStyle.copyWith(fontSize: 15),
-                        )
+                        Expanded(
+                          flex: 14,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "${widget.post.author.username}",
+                                style: textStyle.copyWith(
+                                  shadows: [],
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.normal,
+                                ),
+                              ),
+                              Text(
+                                "${widget.post.postedTime.toYearString()}",
+                                style: textStyle.copyWith(
+                                  shadows: [],
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.normal,
+                                ),
+                              )
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                   ),
                 ),
-                Positioned(
-                  bottom: 0,
-                  height: 60,
-                  width: MediaQuery.of(context).size.width,
-                  child: Container(
-                    color: coverColor,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            flex: 14,
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "${widget.post.author.username}",
-                                  style: textStyle.copyWith(
-                                    shadows: [],
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.normal,
-                                  ),
-                                ),
-                                Text(
-                                  "${widget.post.postedTime.toYearString()}",
-                                  style: textStyle.copyWith(
-                                    shadows: [],
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.normal,
-                                  ),
-                                )
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                )
-              ],
-            ),
+              )
+            ],
           ),
         ),
       ),

@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:draft_view/draft_view.dart';
 import 'package:draft_view/draft_view/view/DraftView.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyrefresh/easy_refresh.dart';
 import 'package:personal_blog_mobile/model/post_object.dart';
 
 class PostDetail extends StatefulWidget {
@@ -27,12 +28,12 @@ class _PostDetailState extends State<PostDetail> {
     super.initState();
     draftData = JsonDecoder().convert(widget.post.content);
     settings = JsonDecoder().convert(widget.post.settings);
-    scrollController.addListener(() {
-      if (scrollController.offset < -100) {
-        scrollController.dispose();
-        Navigator.pop(context);
-      }
-    });
+    // scrollController.addListener(() {
+    //   if (scrollController.offset < -100) {
+    //     scrollController.dispose();
+    //     Navigator.pop(context);
+    //   }
+    // });
   }
 
   bool get isBrightColor {
@@ -64,45 +65,42 @@ class _PostDetailState extends State<PostDetail> {
   }
 
   Widget _buildHeaderImage() {
-    return Hero(
-      tag: "${widget.post.id}",
-      child: Container(
-        child: Stack(
-          children: [
-            if (widget.post.imageUrl != null)
-              CachedNetworkImage(
-                imageUrl: widget.post.imageUrl,
-                fit: BoxFit.cover,
-                height: 400,
-                width: MediaQuery.of(context).size.width * 1.2,
-                placeholder: (c, _) => Center(
-                  child: CircularProgressIndicator(),
-                ),
-              ),
-            if (widget.post.imageUrl == null)
-              Container(
-                height: 400,
-                color: Colors.pink,
-              ),
-            Positioned(
-              top: 30,
-              width: MediaQuery.of(context).size.width * 0.5,
-              left: 10,
-              child: RichText(
-                text: TextSpan(
-                  text: "${widget.post.title}\n",
-                  style: textStyle,
-                  children: [
-                    TextSpan(
-                      text: "${widget.post.postCategory.category}",
-                      style: textStyle.copyWith(fontSize: 15),
-                    )
-                  ],
-                ),
+    return Container(
+      child: Stack(
+        children: [
+          if (widget.post.imageUrl != null)
+            CachedNetworkImage(
+              imageUrl: widget.post.imageUrl,
+              fit: BoxFit.cover,
+              height: 400,
+              width: MediaQuery.of(context).size.width * 1.2,
+              placeholder: (c, _) => Center(
+                child: CircularProgressIndicator(),
               ),
             ),
-          ],
-        ),
+          if (widget.post.imageUrl == null)
+            Container(
+              height: 400,
+              color: Colors.pink,
+            ),
+          Positioned(
+            top: 30,
+            width: MediaQuery.of(context).size.width * 0.5,
+            left: 10,
+            child: RichText(
+              text: TextSpan(
+                text: "${widget.post.title}\n",
+                style: textStyle,
+                children: [
+                  TextSpan(
+                    text: "${widget.post.postCategory.category}",
+                    style: textStyle.copyWith(fontSize: 15),
+                  )
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -121,29 +119,38 @@ class _PostDetailState extends State<PostDetail> {
         ),
         primaryColor: Colors.blue,
       ),
-      child: Material(
-        child: Stack(
+      child: Scaffold(
+        body: Stack(
           children: [
             Scrollbar(
-              child: SingleChildScrollView(
-                controller: scrollController,
-                child: Column(
-                  children: [
-                    _buildHeaderImage(),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 10),
-                      child: DraftView(rawDraftData: draftData, plugins: [
-                        TextPlugin(),
-                        BlockQuotePlugin(),
-                        HeaderPlugin(),
-                        ImagePlugin(),
-                        PostSettingsPlugin(rawSettings: settings),
-                        ListPlugin(),
-                        AudioPlugin(),
-                      ]),
-                    ),
-                  ],
+              child: EasyRefresh(
+                header: BezierCircleHeader(
+                  backgroundColor: Theme.of(context).cardColor,
+                ),
+                onRefresh: () async {
+                  Navigator.pop(context);
+                },
+                child: SingleChildScrollView(
+                  controller: scrollController,
+                  child: Column(
+                    children: [
+                      _buildHeaderImage(),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 10),
+                        child: DraftView(rawDraftData: draftData, plugins: [
+                          TextPlugin(),
+                          BlockQuotePlugin(),
+                          HeaderPlugin(),
+                          ImagePlugin(),
+                          PostSettingsPlugin(rawSettings: settings),
+                          ListPlugin(),
+                          AudioPlugin(),
+                          LinkPlugin(),
+                        ]),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
