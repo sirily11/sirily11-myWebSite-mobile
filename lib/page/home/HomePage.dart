@@ -19,7 +19,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     PostProvider postProvider = Provider.of(context);
-    var brightness = MediaQuery.of(context).platformBrightness;
+    var brightness = Theme.of(context).brightness;
     bool darkModeOn = brightness == Brightness.dark;
 
     return Material(

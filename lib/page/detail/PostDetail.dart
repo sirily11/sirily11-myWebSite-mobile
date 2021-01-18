@@ -28,7 +28,7 @@ class _PostDetailState extends State<PostDetail> {
     draftData = JsonDecoder().convert(widget.post.content);
     settings = JsonDecoder().convert(widget.post.settings);
     scrollController.addListener(() {
-      if (scrollController.offset < -150) {
+      if (scrollController.offset < -100) {
         scrollController.dispose();
         Navigator.pop(context);
       }
@@ -109,13 +109,15 @@ class _PostDetailState extends State<PostDetail> {
 
   @override
   Widget build(BuildContext context) {
+    Color color = Theme.of(context).textTheme.bodyText1.color;
+
     return Theme(
       data: Theme.of(context).copyWith(
         textTheme: TextTheme(
           headline1: TextStyle(fontSize: 30),
           headline2: TextStyle(fontSize: 25),
           headline3: TextStyle(fontSize: 20),
-          bodyText1: TextStyle(height: 2, fontSize: 17),
+          bodyText1: TextStyle(height: 2, fontSize: 17, color: color),
         ),
         primaryColor: Colors.blue,
       ),
@@ -129,7 +131,8 @@ class _PostDetailState extends State<PostDetail> {
                   children: [
                     _buildHeaderImage(),
                     Padding(
-                      padding: const EdgeInsets.all(8.0),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 10),
                       child: DraftView(rawDraftData: draftData, plugins: [
                         TextPlugin(),
                         BlockQuotePlugin(),
