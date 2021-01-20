@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:personal_blog_mobile/model/post_object.dart';
 
 class PostProvider with ChangeNotifier {
+  bool isSearching = false;
   static String getURL(String path) {
     var base = "https://api.sirileepage.com/blog";
 
@@ -19,13 +20,27 @@ class PostProvider with ChangeNotifier {
 
   Future<void> refresh() async {
     this.nextURL = null;
-    this.fetchPosts();
+    isSearching = false;
+    notifyListeners();
+    await this.fetchPosts();
   }
 
   PostCategory get selectedCategory => _selectedCategory;
 
   set selectedCategory(PostCategory c) {
     _selectedCategory = c;
+    notifyListeners();
+  }
+
+  Future<void> searchPosts(String keyword) async {
+    isSearching = true;
+    notifyListeners();
+    var url = PostProvider.getURL("/post/?search=$keyword");
+    var response = await dio.get(url);
+    var data = (response.data['results'] as List)
+        .map((e) => Post.fromJson(e))
+        .toList();
+    this.posts = data;
     notifyListeners();
   }
 

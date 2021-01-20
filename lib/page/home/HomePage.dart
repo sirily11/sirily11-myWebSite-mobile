@@ -15,6 +15,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final ScrollController scrollController = ScrollController();
+  final TextEditingController textEditingController = TextEditingController();
 
   @override
   void initState() {
@@ -45,6 +46,31 @@ class _HomePageState extends State<HomePage> {
       headerSliverBuilder: (context, _) {
         return [
           CupertinoSliverNavigationBar(
+            middle: Column(
+              children: [
+                CupertinoSearchTextField(
+                  controller: textEditingController,
+                  style: TextStyle(
+                    color: Theme.of(context).textTheme.bodyText2.color,
+                  ),
+                  onSuffixTap: () async {
+                    textEditingController.clear();
+                    await _refresh(postProvider);
+                  },
+                  onSubmitted: (v) async {
+                    try {
+                      EasyLoading.show(status: "Searching...");
+                      await postProvider.searchPosts(v);
+                    } catch (err) {
+                      EasyLoading.showError(err.toString());
+                      await Future.delayed(Duration(seconds: 1));
+                    } finally {
+                      EasyLoading.dismiss();
+                    }
+                  },
+                ),
+              ],
+            ),
             trailing: FlatButton(
               child: Text("Category"),
               onPressed: () async {
@@ -63,7 +89,7 @@ class _HomePageState extends State<HomePage> {
                     curve: Curves.easeInOut);
               },
               child: Text(
-                "${postProvider.selectedCategory == null ? "All" : "${postProvider.selectedCategory.category}"}",
+                "${postProvider.isSearching ? "Search results" : postProvider.selectedCategory == null ? "All" : "${postProvider.selectedCategory.category}"}",
                 style: darkModeOn
                     ? TextStyle(color: Colors.white)
                     : TextStyle(
@@ -74,7 +100,7 @@ class _HomePageState extends State<HomePage> {
           ),
         ];
       },
-      body: Scrollbar(
+      body: CupertinoScrollbar(
         child: EasyRefresh(
           topBouncing: false,
           // scrollController: scrollController,
@@ -93,9 +119,7 @@ class _HomePageState extends State<HomePage> {
             itemCount: postProvider.posts.length + 1,
             itemBuilder: (context, index) {
               if (index == 0) {
-                return Container(
-                  height: 30,
-                );
+                return Container();
               }
 
               var post = postProvider.posts[index - 1];
@@ -114,6 +138,7 @@ class _HomePageState extends State<HomePage> {
         await postProvider.fetchMorePosts();
       } catch (err) {
         EasyLoading.showError(err.toString());
+        await Future.delayed(Duration(seconds: 1));
       } finally {
         EasyLoading.dismiss();
       }
@@ -123,7 +148,7 @@ class _HomePageState extends State<HomePage> {
   Future _refresh(PostProvider postProvider) async {
     try {
       EasyLoading.show(status: "Fetching posts");
-      await postProvider.fetchPosts();
+      await postProvider.refresh();
       EasyLoading.show(status: "Fetching categories");
       await postProvider.fetchCategories();
       await scrollController.animateTo(
@@ -133,6 +158,7 @@ class _HomePageState extends State<HomePage> {
       );
     } catch (err) {
       EasyLoading.showError(err.toString());
+      await Future.delayed(Duration(seconds: 1));
     } finally {
       EasyLoading.dismiss();
     }

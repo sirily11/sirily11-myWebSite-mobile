@@ -4,8 +4,10 @@ import 'dart:math';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:draft_view/draft_view.dart';
 import 'package:draft_view/draft_view/view/DraftView.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyrefresh/easy_refresh.dart';
+import 'package:gallery_saver/gallery_saver.dart';
 import 'package:personal_blog_mobile/model/post_object.dart';
 
 class PostDetail extends StatefulWidget {
@@ -18,7 +20,7 @@ class PostDetail extends StatefulWidget {
 }
 
 class _PostDetailState extends State<PostDetail> {
-  Map<String, dynamic> draftData = {};
+  Map<String, dynamic> draftData;
   Map<String, dynamic> settings = {};
   bool shouldExit = false;
   final ScrollController scrollController = ScrollController();
@@ -26,14 +28,14 @@ class _PostDetailState extends State<PostDetail> {
   @override
   void initState() {
     super.initState();
-    draftData = JsonDecoder().convert(widget.post.content);
-    settings = JsonDecoder().convert(widget.post.settings);
-    // scrollController.addListener(() {
-    //   if (scrollController.offset < -100) {
-    //     scrollController.dispose();
-    //     Navigator.pop(context);
-    //   }
-    // });
+    Future.delayed(Duration(milliseconds: 100)).then((value) {
+      draftData = JsonDecoder().convert(widget.post.content);
+      settings = JsonDecoder().convert(widget.post.settings);
+      setState(() {
+        this.draftData = draftData;
+        this.settings = settings;
+      });
+    });
   }
 
   bool get isBrightColor {
@@ -120,12 +122,13 @@ class _PostDetailState extends State<PostDetail> {
         primaryColor: Colors.blue,
       ),
       child: Scaffold(
+        backgroundColor: Theme.of(context).cardColor,
         body: Stack(
           children: [
-            Scrollbar(
+            CupertinoScrollbar(
               child: EasyRefresh(
                 header: BezierCircleHeader(
-                  backgroundColor: Theme.of(context).cardColor,
+                  backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                 ),
                 onRefresh: () async {
                   Navigator.pop(context);
@@ -138,16 +141,65 @@ class _PostDetailState extends State<PostDetail> {
                       Padding(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 20, vertical: 10),
-                        child: DraftView(rawDraftData: draftData, plugins: [
-                          TextPlugin(),
-                          BlockQuotePlugin(),
-                          HeaderPlugin(),
-                          ImagePlugin(),
-                          PostSettingsPlugin(rawSettings: settings),
-                          ListPlugin(),
-                          AudioPlugin(),
-                          LinkPlugin(),
-                        ]),
+                        child: draftData == null
+                            ? Container()
+                            : DraftView(rawDraftData: draftData, plugins: [
+                                TextPlugin(),
+                                BlockQuotePlugin(),
+                                HeaderPlugin(),
+                                ImagePlugin(actionBuilder: (block) {
+                                  return [
+                                    CupertinoContextMenuAction(
+                                      onPressed: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (c) => ImageDetailView(
+                                              url: block.data['src'],
+                                              caption:
+                                                  block.data['description'],
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      child: Row(
+                                        children: [
+                                          Icon(
+                                            Icons.zoom_in,
+                                            color: Colors.black,
+                                          ),
+                                          SizedBox(
+                                            width: 10,
+                                          ),
+                                          Text("View In Detail"),
+                                        ],
+                                      ),
+                                    ),
+                                    CupertinoContextMenuAction(
+                                      onPressed: () async {
+                                        await GallerySaver.saveImage(
+                                            block.data['src']);
+                                      },
+                                      child: Row(
+                                        children: [
+                                          Icon(
+                                            Icons.save,
+                                            color: Colors.black,
+                                          ),
+                                          SizedBox(
+                                            width: 10,
+                                          ),
+                                          Text("Save"),
+                                        ],
+                                      ),
+                                    )
+                                  ];
+                                }),
+                                PostSettingsPlugin(rawSettings: settings),
+                                ListPlugin(),
+                                AudioPlugin(),
+                                LinkPlugin(),
+                              ]),
                       ),
                     ],
                   ),
